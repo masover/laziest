@@ -5,27 +5,31 @@ module LazyCount
     def initialize enumerator
       @count = 0
       @enumerator = enumerator
-      super do
-        @mutex.synchronize do
-          begin
-            loop do
-              @count += enumerator.next
-            end
-          rescue StopIteration
+      super() do
+        begin
+          ::Kernel.loop do
+            @count += enumerator.next
           end
+        rescue ::StopIteration
         end
+        @count
       end
     end
 
     def __force_to__ value
-      @mutex.synchronize do
-        begin
-          while @count < value
-            @count += enumerator.next
+      if @result.equal?(NOT_SET) && @error.equal?(NOT_SET)
+        @mutex.synchronize do
+          if @result.equal?(NOT_SET) && @error.equal?(NOT_SET)
+            begin
+              while @count < value
+                @count += enumerator.next
+              end
+            rescue ::StopIteration
+            end
           end
-        rescue StopIteration
         end
       end
+      ::Kernel.raise(@error) unless @error.equal?(NOT_SET)
     end
 
     %w(== eql? equal? <= > <=>).map(&:to_sym).each do |op|
