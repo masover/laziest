@@ -4,5 +4,5 @@ module LazyCount
 
   require 'lazy_count/extensions'
 
-  Enumerable.send :include, Extensions::LazyEnumerable
+  Enumerator::Lazy.send :include, Extensions::LazyEnumerator
 end

@@ -1,13 +1,8 @@
 module LazyCount
   module Extensions
-    module LazyEnumerable
+    module LazyEnumerator
       def count
-        enum = each
-        lenum = lazy_enum do
-          enum.next
-          1
-        end
-        LazyCount::Counter.new Enumerator::Lazy.new
+        LazyCount::Counter.new each
       end
     end
   end
