@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
                         When there's just no O(1) way to compute something, this gem provides
                         both promises (lazy evaluation) and partial evaluation, along with
                         implicit, softref-based memoization. For example, (foo.lazy.count > 5) will
-                        invoke the iterator no more than five times.
+                        invoke the iterator at most six times.
                       END
   spec.homepage      = ''
   spec.license       = 'MIT'

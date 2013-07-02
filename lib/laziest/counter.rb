@@ -22,7 +22,7 @@ module Laziest
           if @result.equal?(NOT_SET) && @error.equal?(NOT_SET)
             begin
               while @count < value
-                @count += enumerator.next
+                @count += @enumerator.next
               end
             rescue ::StopIteration
             end
