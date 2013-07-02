@@ -1,18 +1,19 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'lazy_count/version'
+require 'laziest/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "lazy_count"
-  spec.version       = LazyCount::VERSION
+  spec.name          = 'laziest'
+  spec.version       = Laziest::VERSION
   spec.authors       = ['David Masover']
   spec.email         = ['masover@iastate.edu']
-  spec.description   = 'Lazily-evaluated counts'
+  spec.description   = 'The laziest possible enumerables and enumerators'
   spec.summary       = <<-END
-                        When there's just no O(1) way to count something, this class provides both
-                        normal promises (attempting to _use_ the count will result in its evaluation)
-                        and comparison operators (_partial_ evaluation).
+                        When there's just no O(1) way to compute something, this gem provides
+                        both promises (lazy evaluation) and partial evaluation, along with
+                        implicit, softref-based memoization. For example, (foo.lazy.count > 5) will
+                        invoke the iterator no more than five times.
                       END
   spec.homepage      = ''
   spec.license       = 'MIT'
@@ -26,4 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
 
   spec.add_dependency 'promise'
+  spec.add_dependency 'soft_reference'
 end

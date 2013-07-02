@@ -1,6 +1,6 @@
 require 'promise'
 
-module LazyCount
+module Laziest
   class Counter < Promise
     def initialize enumerator
       @count = 0

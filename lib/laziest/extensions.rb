@@ -1,8 +1,8 @@
-module LazyCount
+module Laziest
   module Extensions
     module LazyEnumerator
       def count
-        LazyCount::Counter.new each
+        Laziest::Counter.new each
       end
     end
   end
