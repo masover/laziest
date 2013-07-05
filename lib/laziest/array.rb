@@ -26,9 +26,30 @@ module Laziest
       end
     end
 
-    def [] index
-      __force_to__ index
-      @array[index]
+    # Array-related laziness
+    def [] index, length=nil
+      if length.nil?
+        if index.kind_of? ::Range
+          enum = ::Enumerator.new do |y|
+            index.each do |i|
+              y << self[i]
+            end
+          end
+          ArrayPromise.new enum
+        else
+          __force_to__ index
+          @array[index]
+        end
+      else
+        enum = ::Enumerator.new do |y|
+          i = index
+          length.times do
+            self[i]
+            i += 1
+          end
+        end
+        ArrayPromise.new enum
+      end
     end
 
     def __force_to__ index
