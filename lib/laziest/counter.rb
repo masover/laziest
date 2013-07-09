@@ -1,5 +1,3 @@
-require 'promise'
-
 module Laziest
   class Counter < Promise
     def initialize enumerator

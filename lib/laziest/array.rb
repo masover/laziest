@@ -1,21 +1,27 @@
-require 'promise'
-
 module Laziest
+  # This class is a lazily-evaluated array based on an enumerator.
+  # A contract: The enumerator is guaranteed to never be rewound.
   class ArrayPromise < Promise
-    # Allow a partially-evaluated enumerator/array to initialize.
-    def initialize enumerator, array=[]
+    # Accepts 'array' to allow a partially-evaluated enumerator/array to initialize.
+    def initialize enumerator, array=[], nil_on_empty = false
       @array = array
       @enumerator = enumerator
+      @nil_on_empty = nil_on_empty
       super() do
-        ::Kernel.loop do
-          @array << @enumerator.next
+        begin
+          ::Kernel.loop do
+            @array << @enumerator.next
+          end
+        rescue ::StopIteration
         end
-        @array
+        @enumerator = nil
+        # Needed for use in hashes, like group_by
+        (nil_on_empty && @array.empty?) ? nil : @array
       end
     end
 
     def each(&block)
-      return super unless @result.equal?(NOT_SET) && @error.equal?(NOT_SET)
+      return super if __forced__?
       return ::Enumerator.new{|y| each {|x| y << x}}.lazy unless ::Kernel.block_given?
       index = 0
       ::Kernel.loop do
@@ -28,6 +34,7 @@ module Laziest
 
     # Array-related laziness
     def [] index, length=nil
+      return super if __forced__?
       if length.nil?
         if index.kind_of? ::Range
           enum = ::Enumerator.new do |y|
@@ -44,7 +51,7 @@ module Laziest
         enum = ::Enumerator.new do |y|
           i = index
           length.times do
-            self[i]
+            y << self[i]
             i += 1
           end
         end
@@ -59,8 +66,19 @@ module Laziest
             @array << @enumerator.next
           end
         end
-      rescue StopIteration
+      rescue ::StopIteration
       end
+    end
+
+    def __forced__?
+      if @nil_on_empty && @array.empty?
+        # Check if we're really empty.
+        __force_to__ 1
+        # Either we'll be empty (and finalized as nil), so we'll revert to
+        # calling super which forwards to nil and so on,
+        # or we'll be nonempty (and normal logic proceeds)
+      end
+      !(@result.equal?(NOT_SET) && @error.equal?(NOT_SET))
     end
 
     # Force all enumerable methods to be defined in terms of laziness.
@@ -73,12 +91,14 @@ module Laziest
       slice_before sort sort_by take take_while zip
     ).map(&:to_sym).each do |name|
       define_method name do |*args, &block|
+        return super if __forced__?
         each.lazy.public_send name, *args, &block
       end
     end
 
     # Except this one, make it a no-op. (Also should prevent infinite recursion.)
     def to_a
+      return super if __forced__?
       self
     end
   end
