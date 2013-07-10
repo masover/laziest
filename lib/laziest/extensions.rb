@@ -56,80 +56,47 @@ module Laziest
         [groups[false], groups[true]]
       end
 
-      # Chunk on lazy is actually good enough already for most uses.
-      # Generally, you're chunking a huge stream into small, manageable chunks.
-      # But in that case, you also don't necessarily nead laziness, as chunk
-      # already streams in a standard Enumerable.
-      # The use case here is if any particular chunk is _very_ large, and
-      # maybe infinite, but we actually don't need the entire chunk, and
-      # will actually break our iteration there.
+      # Implemented mainly in terms of slice_before.
+      # It's logically very similar, but has similar amounts of extra sugar.
       def chunk state=nil
+        # Handle state, so we can forget about it.
         unless state.nil?
           return chunk {|value| yield value, state}
         end
+
+        # Even though we could probably do everything with the lazy enum
+        # chaining -- and we do _almost_ everything that way -- we want
+        # to ensure that first_iteration is reset with each run. A brand
+        # new enumerator ensures #rewind and friends work correctly.
+
         Enumerator.new do |yield_array|
-          # Should give us a new, rewound copy.
-          # ec = enum copy
-          ec = enum_for(:each)
-          array = nil
-          current_result = nil
-          lazy_array = nil
+          prev = nil
+          first_iteration = true
 
-          # first iteration, to set things up.
-          begin
-            value = nil
-            while current_result.nil? || current_result == :_separator
-              value = ec.next
-              current_result = yield value
+          map {|value|
+            [value, (yield value)]
+          }.slice_before {|value, result|
+            if first_iteration
+              first_iteration = false
+              # return value doesn't matter
+            else
+              # start a new group when this one differs from prev, or is
+              # specifically requested as 'alone'.
+              result != prev || result == :_alone
             end
-            array = [value]
-          rescue StopIteration
-            array = nil
-          end
-
-          loop do
-            break if array.nil? # either we're empty at start or we're done.
-
-            # An enumerator that returns all following values of this array.
-            array_promise_enum = Enumerator.new do |yield_element|
-              loop do
-                value = nil
-                begin
-                  value = ec.next
-                  result = yield value
-                  # is this a new value?
-                  if result != current_result || result == :_alone
-                    current_result = result
-                    while current_result.nil? || current_result == :_separator
-                      value = ec.next
-                      current_result = yield value
-                    end
-                    array = [value]
-                    break
-                  end
-                rescue StopIteration
-                  # We're done. Clean up.
-                  array = nil
-                  current_result = nil
-                  lazy_array = nil
-                  break
-                end
-                yield_element << value
-              end
-            end
-
-            # nil_on_empty is false, because we will _always_ have elements.
-            lazy_array = ArrayPromise.new array_promise_enum, array
-
-            yield_array << [current_result, lazy_array]
-
-            # Now we have control back. Before we loop again, finish the previous array.
-            lazy_array.__force__
+            prev = result
+          }.each do |value, result|
+            yield result unless value.nil? || value == :_separator
           end
         end
       end
 
-      # Like above, but should be much simpler.
+      # Chunk without laziness is actually good enough already for most uses.
+      # Generally, you're chunking a huge stream into small, manageable chunks.
+      # The standard enumerable will stream well enough there -- each chunk
+      # must be evaluated completely, but the entire stream is evaluated
+      # only as needed. The use case here is if any particular chunk is _very_
+      # large, and maybe infinite, but we actually don't need the entire chunk.
       def slice_before state=nil
         unless block_given?
           # state is a pattern
