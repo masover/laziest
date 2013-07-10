@@ -4,11 +4,8 @@ module Laziest
       @count = 0
       @enumerator = enumerator
       super() do
-        begin
-          ::Kernel.loop do
-            @count += enumerator.next
-          end
-        rescue ::StopIteration
+        ::Kernel.loop do
+          @count += enumerator.next
         end
         @count
       end

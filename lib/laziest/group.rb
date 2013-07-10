@@ -16,13 +16,10 @@ module Laziest
           arr.__force__
         end
         # And just in case there aren't any lazy arrays:
-        begin
-          ::Kernel.loop do
-            val = enumerator.next
-            key = yield val
-            (@hash[key] ||= []) << val
-          end
-        rescue ::StopIteration
+        ::Kernel.loop do
+          val = enumerator.next
+          key = yield val
+          (@hash[key] ||= []) << val
         end
         # Strip out anything that turned out to be empty.
         @hash.delete_if {|k,v| v.empty?}

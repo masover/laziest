@@ -8,11 +8,8 @@ module Laziest
       @enumerator = enumerator
       @nil_on_empty = nil_on_empty
       super() do
-        begin
-          ::Kernel.loop do
-            @array << @enumerator.next
-          end
-        rescue ::StopIteration
+        ::Kernel.loop do
+          @array << @enumerator.next
         end
         @enumerator = nil
         # Needed for use in hashes, like group_by
