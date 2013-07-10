@@ -46,6 +46,16 @@ module Laziest
         end
       end
 
+      # Another functional-but-stub.
+      # TODO: Optimize away the hash, maybe?
+      def partition
+        return enum_for :partition unless block_given?
+        # Negate, forcing these to actual true/false values
+        groups = group_by{|*args| ! yield *args}
+        # No need to double-negate, the following is just inverted.
+        [groups[false], groups[true]]
+      end
+
       # Chunk on lazy is actually good enough already for most uses.
       # Generally, you're chunking a huge stream into small, manageable chunks.
       # But in that case, you also don't necessarily nead laziness, as chunk
