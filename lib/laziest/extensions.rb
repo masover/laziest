@@ -69,7 +69,7 @@ module Laziest
         # to ensure that first_iteration is reset with each run. A brand
         # new enumerator ensures #rewind and friends work correctly.
 
-        Enumerator.new do |yield_array|
+        enum = Enumerator.new do |yield_array|
           prev = nil
           first_iteration = true
 
@@ -89,6 +89,8 @@ module Laziest
             yield result unless value.nil? || value == :_separator
           end
         end
+
+        enum.lazy
       end
 
       # Chunk without laziness is actually good enough already for most uses.
@@ -108,7 +110,7 @@ module Laziest
           return slice_before {|value| yield value, state}
         end
 
-        Enumerator.new do |yield_array|
+        enum = Enumerator.new do |yield_array|
           ec = enum_for(:each)
           array = nil
           lazy_array = nil
@@ -147,6 +149,8 @@ module Laziest
             lazy_array.__force__
           end
         end
+
+        enum.lazy
       end
     end
   end
