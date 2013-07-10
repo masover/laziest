@@ -3,8 +3,10 @@ module Laziest
     module LazyEnumerator
       def count
         enum = Enumerator.new do |y|
-          each do
-            y << 1
+          each do |value|
+            if (!block_given?) || (yield value)
+              y << 1
+            end
           end
         end
         Counter.new enum
