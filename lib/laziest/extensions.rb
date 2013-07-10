@@ -18,6 +18,7 @@ module Laziest
       alias_method :to_a, :entries
 
       def group_by &block
+        return enum_for :group_by unless block_given?
         Group.new enum_for(:each), &block
       end
 
@@ -30,6 +31,18 @@ module Laziest
           else
             klass.new enum_for(&:each)
           end
+        end
+      end
+
+      # Perfectly functional.
+      # TODO: Optimize by sharing an enumerator. As it stands,
+      # in the worst case, we enumerate everything twice, defeating the
+      # entire point of having a separate 'minmax' method.
+      def minmax
+        if block_given?
+          super
+        else
+          [min, max]
         end
       end
 
