@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
                         For example, (foo.lazy.count > 5) will
                         invoke the iterator at most six times.
                       END
-  spec.homepage      = ''
+  spec.homepage      = 'https://github.com/masover/laziest'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files`.split($/)
