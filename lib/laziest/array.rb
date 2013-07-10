@@ -96,6 +96,13 @@ module Laziest
       end
     end
 
+    %w(length size).map(&:to_sym).each do |name|
+      define_method name do
+        return super if __forced__?
+        each.lazy.count
+      end
+    end
+
     # Except this one, make it a no-op. (Also should prevent infinite recursion.)
     def to_a
       return super if __forced__?
