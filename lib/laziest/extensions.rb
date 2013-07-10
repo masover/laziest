@@ -21,6 +21,18 @@ module Laziest
         Group.new enum_for(:each), &block
       end
 
+      %w(min max).map(&:to_sym).each do |name|
+        klass = MinMax.const_get name.capitalize
+        define_method name do
+          if block_given?
+            # can't handle unnatural ordering
+            super
+          else
+            klass.new enum_for(&:each)
+          end
+        end
+      end
+
       # Chunk on lazy is actually good enough already for most uses.
       # Generally, you're chunking a huge stream into small, manageable chunks.
       # But in that case, you also don't necessarily nead laziness, as chunk

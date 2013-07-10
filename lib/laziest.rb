@@ -6,6 +6,7 @@ module Laziest
   autoload :ArrayPromise, 'laziest/array'
   autoload :Group, 'laziest/group'
   autoload :MutexUtil, 'laziest/mutex_util'
+  autoload :MinMax, 'laziest/minmax'
 
   require 'laziest/extensions'
 
