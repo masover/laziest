@@ -11,13 +11,23 @@ module Laziest
         end
         Counter.new enum
       end
-      def to_a
-        ArrayPromise.new self 
+
+      def entries
+        ArrayPromise.new enum_for :each
       end
+      alias_method :to_a, :entries
+
       def group_by &block
-        Group.new self, &block
+        Group.new enum_for(:each), &block
       end
 
+      # Chunk on lazy is actually good enough already for most uses.
+      # Generally, you're chunking a huge stream into small, manageable chunks.
+      # But in that case, you also don't necessarily nead laziness, as chunk
+      # already streams in a standard Enumerable.
+      # The use case here is if any particular chunk is _very_ large, and
+      # maybe infinite, but we actually don't need the entire chunk, and
+      # will actually break our iteration there.
       def chunk state=nil
         Enumerator.new do |yield_array|
           # Should give us a new, rewound copy.
