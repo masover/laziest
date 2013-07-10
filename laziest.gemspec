@@ -11,8 +11,8 @@ Gem::Specification.new do |spec|
   spec.description   = 'The laziest possible enumerables and enumerators'
   spec.summary       = <<-END
                         When there's just no O(1) way to compute something, this gem provides
-                        both promises (lazy evaluation) and partial evaluation, along with
-                        implicit, softref-based memoization. For example, (foo.lazy.count > 5) will
+                        both promises (lazy evaluation) and partial evaluation.
+                        For example, (foo.lazy.count > 5) will
                         invoke the iterator at most six times.
                       END
   spec.homepage      = ''
@@ -27,5 +27,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
 
   spec.add_dependency 'promise'
-  spec.add_dependency 'soft_reference'
 end
